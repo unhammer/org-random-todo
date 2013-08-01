@@ -40,7 +40,7 @@
 
 (defvar org-random-todo-list-cache nil)
 (defun org-random-todo-list-cache ()
-  (setq org-todo-list-cache
+  (setq org-random-todo-list-cache
 	(cl-mapcan
 	 (lambda (file)
 	   (when (file-exists-p file)
@@ -56,14 +56,14 @@
 (defvar org-random-todo-notification-id nil)
 (defun org-random-todo ()
   "Show a random TODO notification from your
-`org-random-todo-files'. Run `org-todo-list-cache' if TODO's are
+`org-random-todo-files'. Run `org-random-todo-list-cache' if TODO's are
 out of date."
   (interactive)
-  (unless org-todo-list-cache
-    (org-todo-list-cache))
+  (unless org-random-todo-list-cache
+    (org-random-todo-list-cache))
   (with-temp-buffer
-    (let ((todo (nth (random (length org-todo-list-cache))
-		     org-todo-list-cache)))
+    (let ((todo (nth (random (length org-random-todo-list-cache))
+		     org-random-todo-list-cache)))
       (message "%s: %s" (file-name-base (car todo)) (cdr todo))
       (setq org-random-todo-notification-id
 	    (notifications-notify :title (file-name-base (car todo))
@@ -83,6 +83,6 @@ random TODO notification.")
 `org-random-todo-cache'.")
 (run-with-idle-timer org-random-todo-cache-idletime
 		     'on-each-idle
-		     'org-todo-list-cache)
+		     'org-random-todo-list-cache)
 
 (provide 'org-random-todo)
