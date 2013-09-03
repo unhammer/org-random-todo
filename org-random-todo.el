@@ -48,9 +48,14 @@
 	       (org-element-map (org-element-parse-buffer)
 				'headline
 				(lambda (hl)
-				  (when (org-element-property :todo-keyword hl)
+				  (when (and
+                         (org-element-property :todo-keyword hl)
+                         (not (equal "DONE"
+                                     (org-element-property :todo-keyword hl))))
 				    (cons file
-					  (org-element-property :raw-value hl))))))))
+                          (concat (org-element-property :todo-keyword hl)
+                                  ": "
+                                  (org-element-property :raw-value hl)))))))))
 	 (or org-random-todo-files org-agenda-files))))
 
 (defvar org-random-todo-notification-id nil)
@@ -65,11 +70,12 @@ out of date."
     (let ((todo (nth (random (length org-random-todo-list-cache))
 		     org-random-todo-list-cache)))
       (message "%s: %s" (file-name-base (car todo)) (cdr todo))
-      (setq org-random-todo-notification-id
-	    (notifications-notify :title (file-name-base (car todo))
-				  :body (cdr todo)
-				  :timeout 4
-				  :replaces-id org-random-todo-notification-id)))))
+      (when (fboundp 'notifications-notify)
+        (setq org-random-todo-notification-id
+              (notifications-notify :title (file-name-base (car todo))
+                                    :body (cdr todo)
+                                    :timeout 4
+                                    :replaces-id org-random-todo-notification-id))))))
 
 (defvar org-random-todo-how-often 600
   "After this many seconds, run `org-random-todo' to show a
