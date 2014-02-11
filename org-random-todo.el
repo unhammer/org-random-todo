@@ -64,18 +64,19 @@
 `org-random-todo-files'. Run `org-random-todo-list-cache' if TODO's are
 out of date."
   (interactive)
-  (unless org-random-todo-list-cache
-    (org-random-todo-list-cache))
-  (with-temp-buffer
-    (let ((todo (nth (random (length org-random-todo-list-cache))
-		     org-random-todo-list-cache)))
-      (message "%s: %s" (file-name-base (car todo)) (cdr todo))
-      (when (fboundp 'notifications-notify)
-        (setq org-random-todo-notification-id
-              (notifications-notify :title (file-name-base (car todo))
-                                    :body (cdr todo)
-                                    :timeout 4
-                                    :replaces-id org-random-todo-notification-id))))))
+  (unless (minibufferp)	 ; don't run if minibuffer is asking something
+    (unless org-random-todo-list-cache
+      (org-random-todo-list-cache))
+    (with-temp-buffer
+      (let ((todo (nth (random (length org-random-todo-list-cache))
+		       org-random-todo-list-cache)))
+	(message "%s: %s" (file-name-base (car todo)) (cdr todo))
+	(when (fboundp 'notifications-notify)
+	  (setq org-random-todo-notification-id
+		(notifications-notify :title (file-name-base (car todo))
+				      :body (cdr todo)
+				      :timeout 4
+				      :replaces-id org-random-todo-notification-id)))))))
 
 (defvar org-random-todo-how-often 600
   "After this many seconds, run `org-random-todo' to show a
@@ -83,6 +84,7 @@ random TODO notification.")
 (run-with-timer org-random-todo-how-often
 		org-random-todo-how-often
 		'org-random-todo)
+
 
 (defvar org-random-todo-cache-idletime 600
   "After being idle this many seconds, update
