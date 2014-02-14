@@ -48,14 +48,12 @@
 	       (org-element-map (org-element-parse-buffer)
 				'headline
 				(lambda (hl)
-				  (when (and
-                         (org-element-property :todo-keyword hl)
-                         (not (equal "DONE"
-                                     (org-element-property :todo-keyword hl))))
+				  (when (and (org-element-property :todo-type hl)
+					     (not (equal 'done (org-element-property :todo-type hl))))
 				    (cons file
-                          (concat (org-element-property :todo-keyword hl)
-                                  ": "
-                                  (org-element-property :raw-value hl)))))))))
+					  (concat (org-element-property :todo-keyword hl)
+						  ": "
+						  (org-element-property :raw-value hl)))))))))
 	 (or org-random-todo-files org-agenda-files))))
 
 (defvar org-random-todo-notification-id nil)
