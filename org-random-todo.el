@@ -69,12 +69,13 @@ out of date."
       (let ((todo (nth (random (length org-random-todo-list-cache))
 		       org-random-todo-list-cache)))
 	(message "%s: %s" (file-name-base (car todo)) (cdr todo))
-	(when (fboundp 'notifications-notify)
-	  (setq org-random-todo-notification-id
-		(notifications-notify :title (file-name-base (car todo))
-				      :body (cdr todo)
-				      :timeout 4
-				      :replaces-id org-random-todo-notification-id)))))))
+	(when (and (fboundp 'notifications-notify)
+                   (notifications-get-capabilities))
+          (setq org-random-todo-notification-id
+                (notifications-notify :title (file-name-base (car todo))
+                                      :body (cdr todo)
+                                      :timeout 4
+                                      :replaces-id org-random-todo-notification-id)))))))
 
 (defvar org-random-todo-how-often 600
   "After this many seconds, run `org-random-todo' to show a
@@ -92,3 +93,4 @@ random TODO notification.")
 		     'org-random-todo-list-cache)
 
 (provide 'org-random-todo)
+;;; org-random-todo.el ends here
