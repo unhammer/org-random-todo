@@ -3,7 +3,7 @@
 ;; Copyright (C) 2013 Kevin Brubeck Unhammer
 
 ;; Author: Kevin Brubeck Unhammer <unhammer+dill@mm.st>
-;; Version: 0.1
+;; Version: 0.2
 ;; Package-Requires: ((emacs "24.3"))
 ;; Keywords: org todo notification
 
@@ -26,21 +26,24 @@
 
 ;; Show a random TODO from your org-agenda-files every so often.
 ;; Requires org-element, which was added fairly recently to org-mode
-;; (tested with org-mode version 7.9.3f).
+;; (tested with org-mode version 7.9.3f and later).
 
 ;;; Code:
 
 (require 'org-element)
 (require 'cl-lib)
+(require 'notifications nil 'noerror)
 (unless (fboundp 'cl-mapcan) (defalias 'cl-mapcan 'mapcan))
 
 (defvar org-random-todo-files nil
-  "Files to grab TODO items from (if nil, use
-`org-agenda-files').")
+  "Files to grab TODO items from.
+If nil, use `org-agenda-files'.")
 
-(defvar org-random-todo-list-cache nil)
-(defun org-random-todo-list-cache ()
-  (setq org-random-todo-list-cache
+(defvar org-random-todo--cache nil)
+
+(defun org-random-todo--update-cache ()
+  "Update the cache of TODO's."
+  (setq org-random-todo--cache
 	(cl-mapcan
 	 (lambda (file)
 	   (when (file-exists-p file)
@@ -56,43 +59,52 @@
 						  (org-element-property :raw-value hl)))))))))
 	 (or org-random-todo-files org-agenda-files))))
 
-(defvar org-random-todo-notification-id nil)
+(defvar org-random-todo--notification-id nil)
+
+(defvar org-random-todo-notification-timeout 4000
+  "How long to show the on-screen notification.")
 
 ;;;###autoload
 (defun org-random-todo ()
-  "Show a random TODO notification from your
-`org-random-todo-files'. Run `org-random-todo-list-cache' if TODO's are
-out of date."
+  "Show a random TODO notification from your agenda files.
+See `org-random-todo-files' to change what files are crawled.
+Runs `org-random-todo--update-cache' if TODO's are out of date."
   (interactive)
   (unless (minibufferp)	 ; don't run if minibuffer is asking something
-    (unless org-random-todo-list-cache
-      (org-random-todo-list-cache))
+    (unless org-random-todo--cache
+      (org-random-todo--update-cache))
     (with-temp-buffer
-      (let ((todo (nth (random (length org-random-todo-list-cache))
-		       org-random-todo-list-cache)))
+      (let ((todo (nth (random (length org-random-todo--cache))
+		       org-random-todo--cache)))
 	(message "%s: %s" (file-name-base (car todo)) (cdr todo))
 	(when (and (require 'notifications nil 'noerror)
                    (notifications-get-capabilities))
-          (setq org-random-todo-notification-id
+          (setq org-random-todo--notification-id
                 (notifications-notify :title (file-name-base (car todo))
                                       :body (cdr todo)
-                                      :timeout 4
-                                      :replaces-id org-random-todo-notification-id)))))))
+                                      :timeout org-random-todo-notification-timeout
+                                      :replaces-id org-random-todo--notification-id)))))))
 
 (defvar org-random-todo-how-often 600
-  "After this many seconds, run `org-random-todo' to show a
-random TODO notification.")
-(run-with-timer org-random-todo-how-often
-		org-random-todo-how-often
-		'org-random-todo)
+  "Show a message every this many seconds.
+This happens simply by requiring `org-random-todo', as long as
+this variable is set to a number.")
+
+(when (numberp org-random-todo-how-often)
+  (run-with-timer org-random-todo-how-often
+                  org-random-todo-how-often
+                  'org-random-todo))
 
 
 (defvar org-random-todo-cache-idletime 600
-  "After being idle this many seconds, update
-`org-random-todo-cache'.")
-(run-with-idle-timer org-random-todo-cache-idletime
-		     'on-each-idle
-		     'org-random-todo-list-cache)
+  "Update cache after being idle this many seconds.
+See `org-random-todo--update-cache'; only happens if this variable is
+a number.")
+
+(when (numberp org-random-todo-cache-idletime)
+  (run-with-idle-timer org-random-todo-cache-idletime
+                       'on-each-idle
+                       'org-random-todo--update-cache))
 
 (provide 'org-random-todo)
 ;;; org-random-todo.el ends here
