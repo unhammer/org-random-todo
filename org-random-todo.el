@@ -4,7 +4,7 @@
 
 ;; Author: Kevin Brubeck Unhammer <unhammer+dill@mm.st>
 ;; Version: 0.1
-;; Package-Requires: ((org-mode "7.9.3f"))
+;; Package-Requires: ((org-mode "7.9.3"))
 ;; Keywords: org todo notification
 
 ;; This file is not part of GNU Emacs.
