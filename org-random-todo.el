@@ -57,6 +57,8 @@
 	 (or org-random-todo-files org-agenda-files))))
 
 (defvar org-random-todo-notification-id nil)
+
+;;;###autoload
 (defun org-random-todo ()
   "Show a random TODO notification from your
 `org-random-todo-files'. Run `org-random-todo-list-cache' if TODO's are
