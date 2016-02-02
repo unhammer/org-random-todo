@@ -31,7 +31,7 @@
 ;;; Code:
 
 (require 'org-element)
-(require 'cl)
+(require 'cl-lib)
 (unless (fboundp 'cl-mapcan) (defalias 'cl-mapcan 'mapcan))
 
 (defvar org-random-todo-files nil
@@ -69,7 +69,7 @@ out of date."
       (let ((todo (nth (random (length org-random-todo-list-cache))
 		       org-random-todo-list-cache)))
 	(message "%s: %s" (file-name-base (car todo)) (cdr todo))
-	(when (and (fboundp 'notifications-notify)
+	(when (and (require 'notifications nil 'noerror)
                    (notifications-get-capabilities))
           (setq org-random-todo-notification-id
                 (notifications-notify :title (file-name-base (car todo))
