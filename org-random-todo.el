@@ -1,9 +1,9 @@
 ;;; org-random-todo.el --- notify of random TODO's
 
-;; Copyright (C) 2013 Kevin Brubeck Unhammer
+;; Copyright (C) 2013-2016 Kevin Brubeck Unhammer
 
-;; Author: Kevin Brubeck Unhammer <unhammer+dill@mm.st>
-;; Version: 0.2
+;; Author: Kevin Brubeck Unhammer <unhammer@fsfe.org>
+;; Version: 0.3
 ;; Package-Requires: ((emacs "24.3"))
 ;; Keywords: org todo notification
 
@@ -90,21 +90,41 @@ Runs `org-random-todo--update-cache' if TODO's are out of date."
 This happens simply by requiring `org-random-todo', as long as
 this variable is set to a number.")
 
-(when (numberp org-random-todo-how-often)
-  (run-with-timer org-random-todo-how-often
-                  org-random-todo-how-often
-                  'org-random-todo))
-
 
 (defvar org-random-todo-cache-idletime 600
   "Update cache after being idle this many seconds.
 See `org-random-todo--update-cache'; only happens if this variable is
 a number.")
 
-(when (numberp org-random-todo-cache-idletime)
-  (run-with-idle-timer org-random-todo-cache-idletime
-                       'on-each-idle
-                       'org-random-todo--update-cache))
+(defvar org-random-todo--timers nil
+  "List of timers that need to be cancelled on exiting org-random-todo-mode.")
+
+(defun org-random-todo--setup ()
+  "Set up idle timers."
+  (setq org-random-todo--timers
+        (list
+         (when (numberp org-random-todo-how-often)
+           (run-with-timer org-random-todo-how-often
+                           org-random-todo-how-often
+                           'org-random-todo))
+         (when (numberp org-random-todo-cache-idletime)
+           (run-with-idle-timer org-random-todo-cache-idletime
+                                'on-each-idle
+                                'org-random-todo--update-cache)))))
+
+(defun org-random-todo--teardown ()
+  "Remove idle timers."
+  (mapc #'cancel-timer (cl-remove-if nil org-random-todo--timers))
+  (setq org-random-todo--timers nil))
+
+;;;###autoload
+(define-minor-mode org-random-todo-mode
+  "Show a random TODO every so often"
+  :global t
+  (if org-random-todo-mode
+      (org-random-todo--setup)
+    (org-random-todo--teardown)))
+
 
 (provide 'org-random-todo)
 ;;; org-random-todo.el ends here
