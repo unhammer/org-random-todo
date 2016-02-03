@@ -3,8 +3,8 @@
 ;; Copyright (C) 2013-2016 Kevin Brubeck Unhammer
 
 ;; Author: Kevin Brubeck Unhammer <unhammer@fsfe.org>
-;; Version: 0.3
-;; Package-Requires: ((emacs "24.3"))
+;; Version: 0.4
+;; Package-Requires: ((emacs "24.3") (alert))
 ;; Keywords: org todo notification
 
 ;; This file is not part of GNU Emacs.
@@ -31,8 +31,8 @@
 ;;; Code:
 
 (require 'org-element)
+(require 'alert)
 (require 'cl-lib)
-(require 'notifications nil 'noerror)
 (unless (fboundp 'cl-mapcan) (defalias 'cl-mapcan 'mapcan))
 
 (defvar org-random-todo-files nil
@@ -59,11 +59,6 @@ If nil, use `org-agenda-files'.")
 						  (org-element-property :raw-value hl)))))))))
 	 (or org-random-todo-files org-agenda-files))))
 
-(defvar org-random-todo--notification-id nil)
-
-(defvar org-random-todo-notification-timeout 4000
-  "How long to show the on-screen notification.")
-
 ;;;###autoload
 (defun org-random-todo ()
   "Show a random TODO notification from your agenda files.
@@ -76,14 +71,12 @@ Runs `org-random-todo--update-cache' if TODO's are out of date."
     (with-temp-buffer
       (let ((todo (nth (random (length org-random-todo--cache))
 		       org-random-todo--cache)))
-	(message "%s: %s" (file-name-base (car todo)) (cdr todo))
-	(when (and (require 'notifications nil 'noerror)
-                   (notifications-get-capabilities))
-          (setq org-random-todo--notification-id
-                (notifications-notify :title (file-name-base (car todo))
-                                      :body (cdr todo)
-                                      :timeout org-random-todo-notification-timeout
-                                      :replaces-id org-random-todo--notification-id)))))))
+	(alert (cdr todo)
+               :title (file-name-base (car todo))
+               :severity 'trivial
+               :mode 'org-mode
+               :category 'random-todo
+               :buffer (find-buffer-visiting (car todo)))))))
 
 (defvar org-random-todo-how-often 600
   "Show a message every this many seconds.
