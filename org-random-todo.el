@@ -4,7 +4,7 @@
 
 ;; Author: Kevin Brubeck Unhammer <unhammer@fsfe.org>
 ;; Version: 0.4
-;; Package-Requires: ((emacs "24.3") (alert))
+;; Package-Requires: ((emacs "24.3") (alert "1.2"))
 ;; Keywords: org todo notification
 
 ;; This file is not part of GNU Emacs.
