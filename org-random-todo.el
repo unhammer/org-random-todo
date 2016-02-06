@@ -3,7 +3,7 @@
 ;; Copyright (C) 2013-2016 Kevin Brubeck Unhammer
 
 ;; Author: Kevin Brubeck Unhammer <unhammer@fsfe.org>
-;; Version: 0.4
+;; Version: 0.4.1
 ;; Package-Requires: ((emacs "24.3") (alert "1.2"))
 ;; Keywords: org todo notification
 
@@ -53,11 +53,23 @@ If nil, use `org-agenda-files'.")
 				(lambda (hl)
 				  (when (and (org-element-property :todo-type hl)
 					     (not (equal 'done (org-element-property :todo-type hl))))
-				    (cons file
-					  (concat (org-element-property :todo-keyword hl)
-						  ": "
-						  (org-element-property :raw-value hl)))))))))
+                                    (cons file hl)))))))
 	 (or org-random-todo-files org-agenda-files))))
+
+(defun org-random-todo--headline-to-msg (elt)
+  "Create a readable alert-message of this TODO headline.
+The `ELT' argument is an org element, see `org-element'."
+  (format "%s: %s"
+          (org-element-property :todo-keyword elt)
+          (org-element-property :raw-value elt)))
+
+(defvar org-random-todo--current nil)
+
+(defun org-random-todo-goto-current ()
+  "Go to the file/position of last shown TODO."
+  (interactive)
+  (find-file (car org-random-todo--current))
+  (goto-char (cdr org-random-todo--current)))
 
 ;;;###autoload
 (defun org-random-todo ()
@@ -69,14 +81,17 @@ Runs `org-random-todo--update-cache' if TODO's are out of date."
     (unless org-random-todo--cache
       (org-random-todo--update-cache))
     (with-temp-buffer
-      (let ((todo (nth (random (length org-random-todo--cache))
-		       org-random-todo--cache)))
-	(alert (cdr todo)
-               :title (file-name-base (car todo))
+      (let* ((todo (nth (random (length org-random-todo--cache))
+                        org-random-todo--cache))
+             (path (car todo))
+             (elt (cdr todo)))
+        (setq org-random-todo--current (cons path (org-element-property :begin elt)))
+        (alert (org-random-todo--headline-to-msg elt)
+               :title (file-name-base path)
                :severity 'trivial
                :mode 'org-mode
                :category 'random-todo
-               :buffer (find-buffer-visiting (car todo)))))))
+               :buffer (find-buffer-visiting path))))))
 
 (defvar org-random-todo-how-often 600
   "Show a message every this many seconds.
