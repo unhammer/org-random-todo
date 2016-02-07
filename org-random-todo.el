@@ -107,6 +107,15 @@ a number.")
 (defvar org-random-todo--timers nil
   "List of timers that need to be cancelled on exiting org-random-todo-mode.")
 
+(defun org-random-todo-unless-idle ()
+  "Only run `org-random-todo' if we're not idle.
+This is to avoid getting a bunch of notification build-up after
+e.g. a sleep/resume."
+  (when (or (not (current-idle-time))
+            (< (time-to-seconds (current-idle-time))
+               org-random-todo-how-often))
+    (org-random-todo)))
+
 (defun org-random-todo--setup ()
   "Set up idle timers."
   (setq org-random-todo--timers
@@ -114,7 +123,7 @@ a number.")
          (when (numberp org-random-todo-how-often)
            (run-with-timer org-random-todo-how-often
                            org-random-todo-how-often
-                           'org-random-todo))
+                           'org-random-todo-unless-idle))
          (when (numberp org-random-todo-cache-idletime)
            (run-with-idle-timer org-random-todo-cache-idletime
                                 'on-each-idle
