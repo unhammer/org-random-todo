@@ -35,26 +35,37 @@
 (require 'cl-lib)
 (unless (fboundp 'cl-mapcan) (defalias 'cl-mapcan 'mapcan))
 
-(defvar org-random-todo-files nil
+(defgroup org-random-todo nil
+  "Options for showing random org-mode TODO's."
+  :tag "Org Random Todo"
+  :group 'org)
+
+(defcustom org-random-todo-files nil
   "Files to grab TODO items from.
-If nil, use `org-agenda-files'.")
+If nil, use `org-agenda-files'.  See that variable for documentation."
+  :group 'org-random-todo
+  :type '(choice
+	  (repeat :tag "List of files and directories" file)
+	  (file :tag "Store list in a file\n" :value "~/.agenda_files")))
 
 (defvar org-random-todo--cache nil)
 
 (defun org-random-todo--update-cache ()
   "Update the cache of TODO's."
-  (setq org-random-todo--cache
-	(cl-mapcan
-	 (lambda (file)
-	   (when (file-exists-p file)
-	     (with-current-buffer (org-get-agenda-file-buffer file)
-	       (org-element-map (org-element-parse-buffer)
-				'headline
-				(lambda (hl)
-				  (when (and (org-element-property :todo-type hl)
-					     (not (equal 'done (org-element-property :todo-type hl))))
-                                    (cons file hl)))))))
-	 (or org-random-todo-files org-agenda-files))))
+  (let* ((org-agenda-files (or org-random-todo-files org-agenda-files))
+         (files (org-agenda-files)))
+    (setq org-random-todo--cache
+          (cl-mapcan
+           (lambda (file)
+             (when (file-exists-p file)
+               (with-current-buffer (org-get-agenda-file-buffer file)
+                 (org-element-map (org-element-parse-buffer)
+                     'headline
+                   (lambda (hl)
+                     (when (and (org-element-property :todo-type hl)
+                                (not (equal 'done (org-element-property :todo-type hl))))
+                       (cons file hl)))))))
+           files))))
 
 (defun org-random-todo--headline-to-msg (elt)
   "Create a readable alert-message of this TODO headline.
