@@ -1,1 +1,48 @@
-See org-random-todo.el
+#+TITLE: org-random-todo
+
+This will show a random TODO from your =org-agenda-files= every so
+often. It uses [[https://github.com/jwiegley/alert][alert]] to show the notifications – see that package on
+how to use other notification methods than =message=.
+
+* Installation
+** MELPA
+If you use [[https://melpa.org/][MELPA]], you can just do =M-x list-packages=, find
+=org-random-todo= in the list and hit =i x=.
+
+** Manual
+Install [[https://github.com/jwiegley/alert][alert]], and ensure you're running =org-mode= version 7.9.3f or
+later. Then just put =org-random-todo.el= somewhere in =load-path=.
+
+* Usage
+** Manual, loading on startup:
+   Put this in your =~/.emacs.d/init.el=:
+
+#+BEGIN_SRC emacs-lisp
+  (require 'org-random-todo)
+  (setq org-random-todo-how-often 1500)
+  (org-random-todo-mode 1)
+#+END_SRC
+
+** With use-package
+   I have this in my =~/.emacs.d/init.el= to install it if not
+   installed yet, and only load it after I've opened at least one
+   =org-mode= file, and use =notifications= instead of =message= for
+   this package:
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org-random-todo
+    :ensure t
+    :after org
+    :commands (org-random-todo-mode org-random-todo)
+    :config
+    (setq org-random-todo-how-often 1500)
+    (org-random-todo-mode 1))
+
+  (use-package alert
+    :defer t
+    :config
+    (alert-add-rule :mode     'org-mode
+                    :category "random-todo"
+                    :style 'notifications
+                    :continue t))
+#+END_SRC
