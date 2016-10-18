@@ -129,16 +129,16 @@ e.g. a sleep/resume."
 
 (defun org-random-todo--setup ()
   "Set up idle timers."
-  (setq org-random-todo--timers
-        (list
-         (when (numberp org-random-todo-how-often)
-           (run-with-timer org-random-todo-how-often
-                           org-random-todo-how-often
-                           'org-random-todo-unless-idle))
-         (when (numberp org-random-todo-cache-idletime)
-           (run-with-idle-timer org-random-todo-cache-idletime
-                                'on-each-idle
-                                'org-random-todo--update-cache)))))
+  (when (numberp org-random-todo-how-often)
+    (add-to-list 'org-random-todo--timers
+                 (run-with-timer org-random-todo-how-often
+                                 org-random-todo-how-often
+                                 'org-random-todo-unless-idle)))
+  (when (numberp org-random-todo-cache-idletime)
+    (add-to-list 'org-random-todo--timers
+                 (run-with-idle-timer org-random-todo-cache-idletime
+                                      'on-each-idle
+                                      'org-random-todo--update-cache))))
 
 (defun org-random-todo--teardown ()
   "Remove idle timers."
