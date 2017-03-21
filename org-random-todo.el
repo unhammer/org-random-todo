@@ -1,9 +1,9 @@
 ;;; org-random-todo.el --- notify of random TODO's
 
-;; Copyright (C) 2013-2016 Kevin Brubeck Unhammer
+;; Copyright (C) 2013-2017 Kevin Brubeck Unhammer
 
 ;; Author: Kevin Brubeck Unhammer <unhammer@fsfe.org>
-;; Version: 0.4.1
+;; Version: 0.5.0
 ;; Package-Requires: ((emacs "24.3") (alert "1.2"))
 ;; Keywords: org todo notification
 
@@ -48,7 +48,21 @@ If nil, use `org-agenda-files'.  See that variable for documentation."
 	  (repeat :tag "List of files and directories" file)
 	  (file :tag "Store list in a file\n" :value "~/.agenda_files")))
 
+(defcustom org-random-todo-include-scheduled nil
+  "If non-nil, also include SCHEDULED elements.
+These are typically less interesting to show randomly, since
+they're in your agenda already."
+  :group 'org-random-todo
+  :type 'bool)
+
 (defvar org-random-todo--cache nil)
+
+(defun org-random-todo--scheduledp (hl)
+  "Return nil unless HL has a \"SCHEDULED\" property."
+  (cl-mapcan (lambda (l) (plist-get l :scheduled))
+             (cdr (assoc 'planning
+                         (cdr (assoc 'section
+                                     hl))))))
 
 (defun org-random-todo--update-cache ()
   "Update the cache of TODO's."
@@ -63,6 +77,8 @@ If nil, use `org-agenda-files'.  See that variable for documentation."
                      'headline
                    (lambda (hl)
                      (when (and (org-element-property :todo-type hl)
+                                (or org-random-todo-include-scheduled
+                                    (not (org-random-todo--scheduledp hl)))
                                 (not (equal 'done (org-element-property :todo-type hl))))
                        (cons file hl)))))))
            files))))
