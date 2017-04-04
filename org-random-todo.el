@@ -3,7 +3,7 @@
 ;; Copyright (C) 2013-2017 Kevin Brubeck Unhammer
 
 ;; Author: Kevin Brubeck Unhammer <unhammer@fsfe.org>
-;; Version: 0.5.0
+;; Version: 0.5.1
 ;; Package-Requires: ((emacs "24.3") (alert "1.2"))
 ;; Keywords: org todo notification
 
@@ -55,6 +55,11 @@ they're in your agenda already."
   :group 'org-random-todo
   :type 'bool)
 
+(defcustom org-random-todo-skip-keywords nil
+  "List of TODO keywords to skip."
+  :group 'org-random-todo
+  :type '(list string))
+
 (defvar org-random-todo--cache nil)
 
 (defun org-random-todo--scheduledp (hl)
@@ -79,6 +84,8 @@ they're in your agenda already."
                      (when (and (org-element-property :todo-type hl)
                                 (or org-random-todo-include-scheduled
                                     (not (org-random-todo--scheduledp hl)))
+                                (not (member (org-element-property :todo-keyword hl)
+                                             org-random-todo-skip-keywords))
                                 (not (equal 'done (org-element-property :todo-type hl))))
                        (cons file hl)))))))
            files))))
