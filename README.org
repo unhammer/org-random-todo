@@ -1,5 +1,7 @@
 #+TITLE: org-random-todo
 
+[[http://melpa.org/#/org-random-todo][http://melpa.org/packages/org-random-todo.svg]]
+
 This will show a random TODO from your =org-agenda-files= every so
 often. It uses [[https://github.com/jwiegley/alert][alert]] to show the notifications – see that package on
 how to use other notification methods than =message=.
@@ -46,3 +48,8 @@ later. Then just put =org-random-todo.el= somewhere in =load-path=.
                     :style 'notifications
                     :continue t))
 #+END_SRC
+
+* Related
+
+- [[https://github.com/mwfogleman/org-randomnote][org-randomnote]] lets you go to a random note with =M-x
+  org-randomnote=
