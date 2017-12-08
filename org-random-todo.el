@@ -3,7 +3,7 @@
 ;; Copyright (C) 2013-2017 Kevin Brubeck Unhammer
 
 ;; Author: Kevin Brubeck Unhammer <unhammer@fsfe.org>
-;; Version: 0.5.1
+;; Version: 0.5.2
 ;; Package-Requires: ((emacs "24.3") (alert "1.2"))
 ;; Keywords: org todo notification
 
