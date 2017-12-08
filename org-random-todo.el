@@ -103,7 +103,8 @@ The `ELT' argument is an org element, see `org-element'."
   "Go to the file/position of last shown TODO."
   (interactive)
   (find-file (car org-random-todo--current))
-  (goto-char (cdr org-random-todo--current)))
+  (goto-char (cdr org-random-todo--current))
+  (org-reveal))
 
 ;;;###autoload
 (defun org-random-todo ()
