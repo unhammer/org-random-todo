@@ -153,6 +153,7 @@ e.g. a sleep/resume."
 
 (defun org-random-todo--setup ()
   "Set up idle timers."
+  (org-random-todo--teardown)
   (when (numberp org-random-todo-how-often)
     (add-to-list 'org-random-todo--timers
                  (run-with-timer org-random-todo-how-often
