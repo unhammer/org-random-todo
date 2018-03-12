@@ -99,9 +99,12 @@ The `ELT' argument is an org element, see `org-element'."
 
 (defvar org-random-todo--current nil)
 
+;;;###autoload
 (defun org-random-todo-goto-current ()
   "Go to the file/position of last shown TODO."
   (interactive)
+  (unless org-random-todo--current
+    (org-random-todo))
   (find-file (car org-random-todo--current))
   (goto-char (cdr org-random-todo--current))
   (org-reveal))
