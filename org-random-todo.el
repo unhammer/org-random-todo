@@ -60,6 +60,11 @@ they're in your agenda already."
   :group 'org-random-todo
   :type '(list string))
 
+(defcustom org-random-todo-notification-hook nil
+  "Hook runs after showing a random TODO notification."
+  :group 'org-random-todo
+  :type 'hook)
+
 (defvar org-random-todo--cache nil)
 
 (defun org-random-todo--scheduledp (hl)
@@ -99,9 +104,12 @@ The `ELT' argument is an org element, see `org-element'."
 
 (defvar org-random-todo--current nil)
 
+;;;###autoload
 (defun org-random-todo-goto-current ()
   "Go to the file/position of last shown TODO."
   (interactive)
+  (unless org-random-todo--current
+    (org-random-todo))
   (find-file (car org-random-todo--current))
   (goto-char (cdr org-random-todo--current))
   (org-reveal))
@@ -126,7 +134,8 @@ Runs `org-random-todo--update-cache' if TODO's are out of date."
                :severity 'trivial
                :mode 'org-mode
                :category 'random-todo
-               :buffer (find-buffer-visiting path))))))
+               :buffer (find-buffer-visiting path)))
+      (run-hooks 'org-random-todo-notification-hook))))
 
 (defvar org-random-todo-how-often 600
   "Show a message every this many seconds.
