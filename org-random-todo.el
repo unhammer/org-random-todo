@@ -55,6 +55,13 @@ they're in your agenda already."
   :group 'org-random-todo
   :type 'bool)
 
+(defcustom org-random-todo-include-deadline nil
+  "If non-nil, also include DEADLINE elements.
+These are typically less interesting to show randomly, since
+they're in your agenda already."
+  :group 'org-random-todo
+  :type 'bool)
+
 (defcustom org-random-todo-skip-keywords nil
   "List of TODO keywords to skip."
   :group 'org-random-todo
@@ -62,12 +69,20 @@ they're in your agenda already."
 
 (defvar org-random-todo--cache nil)
 
-(defun org-random-todo--scheduledp (hl)
-  "Return nil unless HL has a \"SCHEDULED\" property."
-  (cl-mapcan (lambda (l) (plist-get l :scheduled))
+(defun org-random-todo--planning-has-prop (hl prop)
+  "Return nil unless HL has a PROP property in the 'planning part of 'section."
+  (cl-mapcan (lambda (l) (plist-get l prop))
              (cdr (assoc 'planning
                          (cdr (assoc 'section
                                      hl))))))
+
+(defun org-random-todo--deadlinep (hl)
+  "Return nil unless HL has a \"DEADLINE\" property."
+  (org-random-todo--planning-has-prop hl :deadline))
+
+(defun org-random-todo--scheduledp (hl)
+  "Return nil unless HL has a \"SCHEDULED\" property."
+  (org-random-todo--planning-has-prop hl :scheduled))
 
 (defun org-random-todo--update-cache ()
   "Update the cache of TODO's."
@@ -82,6 +97,8 @@ they're in your agenda already."
                      'headline
                    (lambda (hl)
                      (when (and (org-element-property :todo-type hl)
+                                (or org-random-todo-include-deadline
+                                    (not (org-random-todo--deadlinep hl)))
                                 (or org-random-todo-include-scheduled
                                     (not (org-random-todo--scheduledp hl)))
                                 (not (member (org-element-property :todo-keyword hl)
