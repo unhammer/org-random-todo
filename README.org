@@ -6,6 +6,10 @@ This will show a random TODO from your =org-agenda-files= every so
 often. It uses [[https://github.com/jwiegley/alert][alert]] to show the notifications – see that package on
 how to use other notification methods than =message=.
 
+If you want to navigate to the most recently shown random TODO, use
+=M-x org-random-todo-goto-current=; navigate to a new one with
+=M-x org-random-todo-goto-new=.
+
 * Installation
 ** MELPA
 If you use [[https://melpa.org/][MELPA]], you can just do =M-x list-packages=, find
@@ -32,24 +36,31 @@ later. Then just put =org-random-todo.el= somewhere in =load-path=.
    this package:
 
 #+BEGIN_SRC emacs-lisp
-  (use-package org-random-todo
-    :ensure t
-    :after org
-    :commands (org-random-todo-mode org-random-todo)
-    :config
-    (setq org-random-todo-how-often 1500)
-    (org-random-todo-mode 1))
+   (use-package org-random-todo
+     :ensure t
+     :after org
+     :commands (org-random-todo-mode
+                org-random-todo
+                org-random-todo-goto-current
+                org-random-todo-goto-new)
+     :config
+     (setq org-random-todo-how-often 1500)
+     (org-random-todo-mode 1))
 
-  (use-package alert
-    :defer t
-    :config
-    (alert-add-rule :mode     'org-mode
-                    :category "random-todo"
-                    :style 'notifications
-                    :continue t))
+   (use-package alert
+     :defer t
+     :config
+     (alert-add-rule :mode     'org-mode
+                     :category "random-todo"
+                     :style 'notifications
+                     :continue t))
 #+END_SRC
 
 * Related
 
-- [[https://github.com/mwfogleman/org-randomnote][org-randomnote]] lets you go to a random note with =M-x
-  org-randomnote=
+- [[https://github.com/mwfogleman/org-randomnote][org-randomnote]] lets you go to a random note with
+  =M-x org-randomnote=, which is shorter to type than
+  =M-x org-random-todo-goto-new=
+- https://www.emacswiki.org/emacs/RemembranceAgents are programs that
+  try to suggest /relevant/ information from your personal data (while
+  =org-random-todo= just suggest information)

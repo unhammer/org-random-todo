@@ -1,9 +1,10 @@
 ;;; org-random-todo.el --- show a random TODO (with alert) every so often
 
-;; Copyright (C) 2013-2017 Kevin Brubeck Unhammer
+;; Copyright (C) 2013-2019 Kevin Brubeck Unhammer
 
 ;; Author: Kevin Brubeck Unhammer <unhammer@fsfe.org>
-;; Version: 0.5.2
+;; Version: 0.5.3
+;; Homepage: https://github.com/unhammer/org-random-todo
 ;; Package-Requires: ((emacs "24.3") (alert "1.2"))
 ;; Keywords: org todo notification calendar
 
@@ -68,7 +69,7 @@ they're in your agenda already."
   :type '(list string))
 
 (defcustom org-random-todo-notification-hook nil
-  "Hook runs after showing a random TODO notification."
+  "Hook run after successfully showing a random TODO notification."
   :group 'org-random-todo
   :type 'hook)
 
@@ -123,7 +124,8 @@ The `ELT' argument is an org element, see `org-element'."
 
 ;;;###autoload
 (defun org-random-todo-goto-current ()
-  "Go to the file/position of last shown TODO."
+  "Go to the file/position of last shown TODO.
+Find one if none have been shown yet."
   (interactive)
   (unless org-random-todo--current
     (org-random-todo))
@@ -132,27 +134,43 @@ The `ELT' argument is an org element, see `org-element'."
   (org-reveal))
 
 ;;;###autoload
+(defun org-random-todo-goto-new ()
+  "Go to the file/position of new random TODO."
+  (interactive)
+  (pcase (org-random-todo--get)
+    (`(,path . ,elt)
+     (find-file path)
+     (goto-char (org-element-property :begin elt))
+     (org-reveal))))
+
+(defun org-random-todo--get ()
+  "Return a random TODO path and org element from your agenda files.
+See `org-random-todo-files' to change what files are crawled.
+Runs `org-random-todo--update-cache' if TODO's are out of date."
+  (unless org-random-todo--cache
+    (org-random-todo--update-cache))
+  (with-temp-buffer
+    (nth (random (length org-random-todo--cache))
+         org-random-todo--cache)))
+
+;;;###autoload
 (defun org-random-todo ()
   "Show a random TODO notification from your agenda files.
 See `org-random-todo-files' to change what files are crawled.
 Runs `org-random-todo--update-cache' if TODO's are out of date."
   (interactive)
   (unless (minibufferp)	 ; don't run if minibuffer is asking something
-    (unless org-random-todo--cache
-      (org-random-todo--update-cache))
-    (with-temp-buffer
-      (let* ((todo (nth (random (length org-random-todo--cache))
-                        org-random-todo--cache))
-             (path (car todo))
-             (elt (cdr todo)))
-        (setq org-random-todo--current (cons path (org-element-property :begin elt)))
-        (alert (org-random-todo--headline-to-msg elt)
-               :title (file-name-base path)
-               :severity 'trivial
-               :mode 'org-mode
-               :category 'random-todo
-               :buffer (find-buffer-visiting path)))
-      (run-hooks 'org-random-todo-notification-hook))))
+    (pcase (org-random-todo--get)
+      (`(,path . ,elt)
+       (setq org-random-todo--current
+             (cons path (org-element-property :begin elt)))
+       (alert (org-random-todo--headline-to-msg elt)
+              :title (file-name-base path)
+              :severity 'trivial
+              :mode 'org-mode
+              :category 'random-todo
+              :buffer (find-buffer-visiting path))
+       (run-hooks 'org-random-todo-notification-hook)))))
 
 (defvar org-random-todo-how-often 600
   "Show a message every this many seconds.
