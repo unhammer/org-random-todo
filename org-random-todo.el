@@ -5,7 +5,7 @@
 ;; Author: Kevin Brubeck Unhammer <unhammer@fsfe.org>
 ;; Version: 0.5.3
 ;; Homepage: https://github.com/unhammer/org-random-todo
-;; Package-Requires: ((emacs "24.3") (alert "1.2"))
+;; Package-Requires: ((emacs "24.3") (alert "1.3"))
 ;; Keywords: org todo notification calendar
 
 ;; This file is not part of GNU Emacs.
@@ -169,6 +169,7 @@ Runs `org-random-todo--update-cache' if TODO's are out of date."
               :severity 'trivial
               :mode 'org-mode
               :category 'random-todo
+              :id 'org-random-todo     ; replace old messages
               :buffer (find-buffer-visiting path))
        (run-hooks 'org-random-todo-notification-hook)))))
 
