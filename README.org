@@ -1,6 +1,7 @@
 #+TITLE: org-random-todo
 
 [[https://melpa.org/#/org-random-todo][https://melpa.org/packages/org-random-todo-badge.svg]]
+[[https://stable.melpa.org/#/org-random-todo][https://stable.melpa.org/packages/org-random-todo-badge.svg]]
 
 This will show a random TODO from your =org-agenda-files= every so
 often. It uses [[https://github.com/jwiegley/alert][alert]] to show the notifications – see that package on
